@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Film Junkies</title>
+    <style>
+        .page{
+            display: grid;
+            grid-template-columns: 20% 80%;
+        }
+        .page-child-sidebar{
+            background-color: white;
+            text-align: center;
+            height: 100vh;
+        }
+        .page-child-posts{
+            background-color: aliceblue;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!--Header-->
+    <div class="header">
+        <a href="login.html">Logout</a>
+    </div>
+    <!--Page-->
+    <div class="page" >
+        <!--Right Side Bar-->
+        <div class="page-child-sidebar">
+        <br>
+        <img src="images/no_profile_pic.png">
+        <div>{{firstname}}</div>
+        <div><h3>Like list:</h3></div>
+            {% for n in likelist%}
+            <div>{{n}}</div>
+            {% endfor %}
+        </div>
+        <!--Posts-->
+        <div class="page-child-posts">
+            {% for n in posts %}
+            <div>{{n[title]}}</div>
+            <div>{{n[post]}}</div>
+            <form action="/index.html">
+                <div class="comment">
+                    <label for="name"><b>comment</b></label>
+                    <input type="text" placeholder="comment" name="comment" required>
+                    <button type="submit">comment</button>
+                </div>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+    <!--Footer-->
+</body>
+</html>

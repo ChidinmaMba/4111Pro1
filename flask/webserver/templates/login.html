@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Film Junkies</title>
+</head>   
+<body>
+    <!--Login-->
+    <form method="POST" action="/login">
+        <div class="sign-up">
+            <h1>Login</h1>
+            <p>Fill in required information to create an account.</p>
+            <hr>
+            <label for="email"><b>Email</b></label>
+            <input type="text" name="email" placeholder="Email" required>
+            <label for="psw"><b>Password</b></label>
+            <input type="password" placeholder="Password" name="psw" required>
+            <button type="submit">Login</button>
+        </div>
+    </form>
+
+    <!--Sign Up-->
+    <form method="POST" action="/signup">
+        <div class="sign-up">
+            <h1>Sign Up</h1>
+            <p>Fill in required information to create an account.</p>
+            <hr>
+            <label for="name"><b>Full Name</b></label>
+            <input type="text" placeholder="Full Name" name="name" required>
+            <label for="email"><b>Email</b></label>
+            <input type="text" name="email" placeholder="Email" required>
+            <label for="psw"><b>Password</b></label>
+            <input type="password" placeholder="Password" name="psw" required>
+            <button type="submit">Sign up</button>
+        </div>
+    </form>
+</body> 
+</html>
