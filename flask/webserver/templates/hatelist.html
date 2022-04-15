@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+
+<body>
+    <h2>Add a Movie that You Like to your Hatelist</h2>
+    <form method="POST" action="/addhl">
+        <label for="name"><b>Title Of Movie</b></label>
+        <input type="text" placeholder="Title" name="title" required>
+
+        <label for="name"><b>Year</b></label>
+        <input type="text" placeholder="Year" name="year" required>
+
+        <button type="submit">Submit Movie</button>
+    </form>
+    <br>
+    <form method="GET" action="/home">
+        <button type="submit">Go back home</button>
+    </form>
+</body>
+</html>

@@ -114,21 +114,21 @@ engine.execute("""CREATE TABLE Post(
 );""");
 
 engine.execute("""CREATE TABLE AddMovie_Likelist(
- mid int,
+ id serial,
  title text,
  year int,
  uid int,
- PRIMARY KEY(mid, uid),
+ PRIMARY KEY(id, uid),
  FOREIGN KEY(uid) REFERENCES Users
  ON DELETE CASCADE
 );""");
 
 engine.execute("""CREATE TABLE AddMovie_Hatelist(
- mid int,
+ id serial,
  title text,
  year int,
  uid int,
- PRIMARY KEY(mid, uid),
+ PRIMARY KEY(id, uid),
  FOREIGN KEY(uid) REFERENCES Users
  ON DELETE CASCADE
 );""");
@@ -312,7 +312,24 @@ def home():
         info.append(_r['title'])
 
     context = dict(watchlist=info)
-    return render_template("/home.html", **context)
+    
+    ll = g.conn.execute('SELECT AddMovie_Likelist.title, AddMovie_LikeList.year FROM AddMovie_LikeList WHERE uid=0;')
+    info_1 = []
+    for _r in ll:
+        info_1.append([_r['title'],_r['year']])
+
+    context1 = dict(likelist=info_1)
+    
+    hl = g.conn.execute('SELECT AddMovie_Hatelist.title, AddMovie_HateList.year FROM AddMovie_HateList WHERE uid=0;')
+    info_2 = []
+    for _r in hl:
+        info_2.append([_r['title'],_r['year']])
+    
+    context2 = dict(hatelist=info_2)
+    
+    full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates/images/no_profile_pic.png')
+    print(full_path)
+    return render_template("/home.html", **context, **context1, **context2, profpic=full_path)
 
 @app.route('/submitmovies', methods=['POST'])
 def submitmovies():
@@ -321,6 +338,28 @@ def submitmovies():
     g.conn.execute("INSERT INTO Chooses(uid, mid) VALUES ({},{});".format(0,int(mid)))
     print(mid)
     return render_template("/choose_movies.html");
+
+@app.route('/likelist', methods=['GET'])
+def liklistpage():
+    return render_template("/likelist.html")
+
+@app.route('/hatelist', methods=['GET'])
+def hatelistpage():
+    return render_template("/hatelist.html")
+
+@app.route('/addll', methods=['POST'])
+def addtoll():
+    title=request.form['title']
+    year=request.form['year']
+    g.conn.execute("INSERT INTO AddMovie_Likelist(title, year, uid) VALUES (%s,%s,0);",(title, year))
+    return render_template("/likelist.html")
+
+@app.route('/addhl', methods=['POST'])
+def addtohl():
+    title=request.form['title']
+    year=request.form['year']
+    g.conn.execute("INSERT INTO AddMovie_Hatelist(title, year, uid) VALUES (%s,%s,0);",(title, year))
+    return render_template("/hatelist.html")
 
 @app.route('/add', methods=['POST'])
 def add():

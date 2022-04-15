@@ -33,7 +33,7 @@
         <!--Right Side Bar-->
         <div class="page-child-sidebar">
         <br>
-        <img src="images/no_profile_pic.png">
+	<img src="{{ profpic }}" alt="User Image">
         <div>{{firstname}}</div>
 	<form method="GET" action="/makepost">
 	    <button type="submit">Make a post</button>
@@ -41,16 +41,30 @@
 	<form method="GET" action="/choosemovies">
 		<button type="submit">Choose Movies you have watched</button>
 	</form>
+
+	<form method="GET" action="/likelist">
+                <button type="submit">Add movies to your like list</button>
+        </form>
+
+	<form method="GET" action="/hatelist">
+                <button type="submit">Add movies to your hate list</button>
+        </form>
+
 	<h4> Movies you watched</h4>
 	{% for w in watchlist %}
 	    <div>{{w}}</div>
 	{% endfor %}
 	<br>
         <div><h3>Like list:</h3></div>
-            {% for n in likelist%}
+            {% for n in likelist %}
             <div>{{n}}</div>
             {% endfor %}
-        </div>
+
+	<div><h3>Hate list:</h3></div>
+            {% for n in hatelist %}
+            <div>{{n}}</div>
+            {% endfor %}
+	</div>
         <!--Posts-->
         <div class="page-child-posts">
             {% for n in posts %}
