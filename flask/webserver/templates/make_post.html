@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Film Junkies</title>
+    <style>
+        body{
+            background-color: aliceblue;
+        }
+        #make-post{
+            text-align: center;
+        }
+        #title{
+            width:35%;
+            height: 40px;
+            font-size: 30px;
+            text-align: center;
+        }
+        #post-content{
+            height:50vh;
+            width: 100%;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <form method="POST" action="/postpost">
+        <div id="make-post">
+            <input id="title" type="text" name="title" placeholder="Title" required> <br>
+            <input type="radio" id="Action" name="genre" value="Action" checked="checked">
+            <label for="Action">Action</label><br>
+            <input type="radio" id="Horror" name="genre" value="Horror">
+            <label for="Horror">Horror</label><br>
+            <input type="radio" id="Drama" name="genre" value="Drama">
+            <label for="Drama">Drama</label><br>
+            <input type="radio" id="ScienceFiction" name="genre" value="Science Fiction">
+            <label for="ScienceFiction">Science Fiction</label><br>
+            <input type="radio" id="Comedy" name="genre" value="Comedy">
+            <label for="Comedy">Comedy</label><br>
+            <input type="radio" id="Romance" name="genre" value="Romance">
+            <label for="Romance">Romance</label><br>
+            <input type="radio" id="Crime" name="genre" value="Crime">
+            <label for="Crime">Crime</label><br>
+
+            <textarea id="post-content" type="text" placeholder="Post your movie related opinion" rows = "5" cols = "60" name = "post_content">
+            </textarea>
+            <button type="submit">Post</button>
+        </div>
+    </form>
+</body>
+</html>

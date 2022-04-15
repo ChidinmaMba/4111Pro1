@@ -19,7 +19,7 @@ from flask import Flask, request, render_template, g, redirect, Response
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
+user_id = None
 
 # XXX: The Database URI should be in the format of: 
 #
@@ -72,12 +72,18 @@ engine.execute("""CREATE TABLE Movies(
  genre text
 );;""");
 
+engine.execute("""INSERT INTO Movies(mid, title, year, genre) VALUES (0, 'Spider Man', 2021, 'Action');""")
+engine.execute("""INSERT INTO Movies(mid, title, year, genre) VALUES (1, 'tick...tick...BOOM', 2021, 'Mystery');""")
+engine.execute("""INSERT INTO Movies(mid, title, year, genre) VALUES (2, 'The Quiet Place', 2021, 'Horror');""")
+engine.execute("""INSERT INTO Movies(mid, title, year, genre) VALUES (3, 'Shang-Chi', 2021, 'Action');""")
+engine.execute("""INSERT INTO Movies(mid, title, year, genre) VALUES (4, 'Coded Bias', 2021, 'Sci-Fi');""")
+
+
 engine.execute("""CREATE TABLE Posts(
  pid serial PRIMARY KEY,
  genre text,
- movie_title text,
  post_title text,
- description text
+ description text UNIQUE
 );""");
 
 engine.execute("""CREATE TABLE Chooses(
@@ -94,6 +100,7 @@ engine.execute("""CREATE TABLE Rate(
 );""");
 
 engine.execute("""CREATE TABLE Comment(
+ commenttext text,
  uid int REFERENCES Users(uid),
  pid int REFERENCES Posts(pid),
  PRIMARY KEY(uid, pid)
@@ -246,15 +253,71 @@ def signup():
     #print(name, email, psw)
     #dup = g.conn.execute(text(f'SELECT COUNT(*) FROM Users WHERE password = {psw};'))
     #if dup == 0:
-    cmd='INSERT INTO Users(name, email, password) VALUES (name, email, psw;)'
+    g.conn.execute("INSERT INTO Users(name, email, password) VALUES (%s,%s,%s);", (name,email,psw))
     users=g.conn.execute(text('SELECT * FROM Users;'))
+    info = []
     for _r in users:
-        print(_r)
-    return render_template('/home.html')
+        info.append([_r['name'], _r['email'], _r['password']])
+    print(info)
+    
+    global user_id
+    user_id = g.conn.execute("SELECT uid FROM Users WHERE name=%s;", (name))
+    return render_template("/home.html",firstname=name)
 
+@app.route('/makepost', methods=['GET'])
+def makepost():
+    return render_template("/make_post.html")
 
+@app.route('/postpost', methods=['POST'])
+def postpost():
+    title=request.form['title']
+    genre=request.form['genre']
+    post_content=request.form['post_content']
+    g.conn.execute("INSERT INTO Posts(genre, post_title, description) VALUES (%s,%s,%s);", (genre,title,post_content))
+    pid = g.conn.execute("SELECT pid from Posts WHERE post_title=%s;", (title)) 
+    global user_id
+    g.conn.execute("INSERT INTO Post(uid, pid) VALUES ({},{});".format(user_id.fetchall()[0]['uid'], pid.fetchall()[0]['pid']))
+    posts = g.conn.execute(text('SELECT * FROM Posts;'))
+    info = []
+    for _r in posts:
+        info.append("{} {}\n {}".format(_r['genre'],_r['post_title'],_r['description']))
 
-# Example of adding new data to the database
+    context = dict(posts=info)
+    return render_template("/home.html", **context)
+    
+@app.route('/comment', methods=['POST'])
+def comment():
+    comment=''
+    comment=request.form['comment']
+    global user_id
+    g.conn.execute('INSERT INTO Comment(commenttext, uid, pid) VALUES ({},{},{});'.format(comment, 2,1))
+    all_comments = g.conn.execute(text('SELECT commenttext FROM Comment;'))
+    info = []
+    for _r in all_comments:
+        info.append(_r['commenttext'])
+
+    context=dict(comments=info)
+    return render_template("/home.html", **context)
+
+@app.route('/choosemovies', methods=['GET'])
+def choosemovies():
+    return render_template("/choose_movies.html")
+
+@app.route('/home', methods=['GET'])
+def home():
+    return render_template("/home.html")
+
+@app.route('/submitmovies', methods=['POST'])
+def submitmovies():
+    movies=request.form['movie']    
+    global user_id
+    mid = g.conn.execute("SELECT mid FROM Movies WHERE title=%s;".format(movies))
+    g.conn.execute("INSERT INTO Chooses(uid, mid) VALUES ({},{});".format(user_id.fetchall()[0]['uid'],mid))
+    print(movies)
+    return
+    
+
+#Examplerof adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
   name = request.form['name']
