@@ -251,9 +251,9 @@ def signup():
     email=request.form['email']
     psw=request.form['psw']
     #print(name, email, psw)
-    #dup = g.conn.execute(text(f'SELECT COUNT(*) FROM Users WHERE password = {psw};'))
+    #i= g.conn.execute(text(f'SELECT COUNT(*) FROM Users WHERE password = {psw};'))
     #if dup == 0:
-    g.conn.execute("INSERT INTO Users(name, email, password) VALUES (%s,%s,%s);", (name,email,psw))
+    g.conn.execute("INSERT INTO Users(uid, name, email, password) VALUES (0,%s,%s,%s);", (name,email,psw))
     users=g.conn.execute(text('SELECT * FROM Users;'))
     info = []
     for _r in users:
@@ -305,19 +305,23 @@ def choosemovies():
 
 @app.route('/home', methods=['GET'])
 def home():
-    return render_template("/home.html")
+    g.conn.execute('SELECT * FROM(SELECT * FROM Chooses WHERE uid=0) AS Userchoices;')
+    wl = g.conn.execute('SELECT Movies.title FROM Movies, Chooses WHERE Chooses.uid=0 AND Chooses.mid=Movies.mid;')
+    info = []
+    for _r in wl:
+        info.append(_r['title'])
+
+    context = dict(watchlist=info)
+    return render_template("/home.html", **context)
 
 @app.route('/submitmovies', methods=['POST'])
 def submitmovies():
-    movies=request.form['movie']    
+    mid=request.form['movie']    
     global user_id
-    mid = g.conn.execute("SELECT mid FROM Movies WHERE title=%s;".format(movies))
-    g.conn.execute("INSERT INTO Chooses(uid, mid) VALUES ({},{});".format(user_id.fetchall()[0]['uid'],mid))
-    print(movies)
-    return
-    
+    g.conn.execute("INSERT INTO Chooses(uid, mid) VALUES ({},{});".format(0,int(mid)))
+    print(mid)
+    return render_template("/choose_movies.html");
 
-#Examplerof adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
   name = request.form['name']
