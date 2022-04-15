@@ -12,6 +12,7 @@ Read about it online.
 
 import os
 import pdb
+import requests
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
@@ -19,7 +20,7 @@ from flask import Flask, request, render_template, g, redirect, Response
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-user_id = None
+user_id = 0
 
 # XXX: The Database URI should be in the format of: 
 #
@@ -101,9 +102,10 @@ engine.execute("""CREATE TABLE Rate(
 
 engine.execute("""CREATE TABLE Comment(
  commenttext text,
+ cid serial,
  uid int REFERENCES Users(uid),
  pid int REFERENCES Posts(pid),
- PRIMARY KEY(uid, pid)
+ PRIMARY KEY(cid, pid)
 );""");
 
 engine.execute("""CREATE TABLE Post(
@@ -230,6 +232,7 @@ def index():
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
+  home()
   return render_template("login.html")#, **context)
 
 #
@@ -274,9 +277,9 @@ def postpost():
     genre=request.form['genre']
     post_content=request.form['post_content']
     g.conn.execute("INSERT INTO Posts(genre, post_title, description) VALUES (%s,%s,%s);", (genre,title,post_content))
-    pid = g.conn.execute("SELECT pid from Posts WHERE post_title=%s;", (title)) 
+    pid = g.conn.execute("SELECT pid from Posts WHERE post_title=%s LIMIT 1;", (title)) 
     global user_id
-    g.conn.execute("INSERT INTO Post(uid, pid) VALUES ({},{});".format(user_id.fetchall()[0]['uid'], pid.fetchall()[0]['pid']))
+    g.conn.execute(f"INSERT INTO Post(uid, pid) VALUES (0,{pid.mappings().all()[0]['pid']});")
     posts = g.conn.execute(text('SELECT * FROM Posts;'))
     info = []
     for _r in posts:
@@ -290,14 +293,25 @@ def comment():
     comment=''
     comment=request.form['comment']
     global user_id
-    g.conn.execute('INSERT INTO Comment(commenttext, uid, pid) VALUES ({},{},{});'.format(comment, 2,1))
+    g.conn.execute('INSERT INTO Comment(commenttext, uid, pid) VALUES (%s,0,1);',(comment))
     all_comments = g.conn.execute(text('SELECT commenttext FROM Comment;'))
     info = []
     for _r in all_comments:
         info.append(_r['commenttext'])
 
     context=dict(comments=info)
+    print(info)
     return render_template("/home.html", **context)
+
+
+@app.route('/rate', methods=['POST'])
+def addrate():
+    g.conn.execute("INSERT INTO Rate(rating, uid,pid) VALUES (TRUE, 0, 1) ON CONFLICT (uid, pid) DO NOTHING;")
+    rating_count_for_post = g.conn.execute("SELECT COUNT (pid) FROM Rate WHERE pid=1;")
+    rating=rating_count_for_post.mappings().all()[0]['count']
+    print(rating)
+    return render_template("/home.html",rating=rating)
+
 
 @app.route('/choosemovies', methods=['GET'])
 def choosemovies():
@@ -327,9 +341,23 @@ def home():
     
     context2 = dict(hatelist=info_2)
     
+    com = g.conn.execute('SELECT commenttext FROM Comment WHERE uid=0')
+    info_3=[]
+    for _r in com:
+        info_3.append(_r['commenttext'])
+
+    context3=dict(comments=info_3)
+
     full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates/images/no_profile_pic.png')
     print(full_path)
-    return render_template("/home.html", **context, **context1, **context2, profpic=full_path)
+
+    posts = g.conn.execute(text('SELECT * FROM Posts;'))
+    info = []
+    for _r in posts:
+        info.append("{} {}\n {}".format(_r['genre'],_r['post_title'],_r['description']))
+    context4 = dict(posts=info)
+
+    return render_template("/home.html", **context, **context1, **context2, **context3, **context4, profpic=full_path)
 
 @app.route('/submitmovies', methods=['POST'])
 def submitmovies():
@@ -360,6 +388,10 @@ def addtohl():
     year=request.form['year']
     g.conn.execute("INSERT INTO AddMovie_Hatelist(title, year, uid) VALUES (%s,%s,0);",(title, year))
     return render_template("/hatelist.html")
+
+@app.route('/rating', methods=['POST'])
+def rate():
+    g.conn.execute("INSERT INTO")
 
 @app.route('/add', methods=['POST'])
 def add():

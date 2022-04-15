@@ -25,16 +25,18 @@
 
 <body>
     <!--Header-->
-    <div class="header">
-        <a href="login.html">Logout</a>
-    </div>
     <!--Page-->
-    <div class="page" >
+    <form method="GET" action="/home">
+	<button type="submit">Refresh</button>
+    </form>
+    <div class="page">
         <!--Right Side Bar-->
         <div class="page-child-sidebar">
         <br>
 	<img src="{{ profpic }}" alt="User Image">
-        <div>{{firstname}}</div>
+	<div><h3>Username:</h3>
+	     <h3>{{firstname}}</h3>
+	</div>
 	<form method="GET" action="/makepost">
 	    <button type="submit">Make a post</button>
 	</form>
@@ -69,7 +71,11 @@
         <div class="page-child-posts">
             {% for n in posts %}
 	    <div>{{n}}</div>
-	   
+	    <h3>LIKES: </h3>
+	    <div>{{rating}}</div>
+	    <form method="POST"  action="/rate">
+            	<button id="like" type="submit">Like This Post</button>
+	    </form>
 	    {% for c in comments %}
 	    	<div>{{c}}</div>
 	    {% endfor %}
@@ -78,17 +84,10 @@
                     <input type="text" placeholder="comment" name="comment" required>
                     <button type="submit">comment</button>
                 </div>
-		<form method="POST" action="/rate">
-                    <input type="submit" name="rate">
-                    <label for="html">Like</label>
-              	</form>
             </form>
             {% endfor %}
         </div>
     </div>
 
-    <script>
-	let 
-    </script>
 </body>
 </html>
