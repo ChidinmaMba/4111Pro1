@@ -71,9 +71,9 @@
         <div class="page-child-posts">
             {% for n in posts %}
 	    <div>{{n}}</div>
-	    <h3>LIKES: </h3>
+	    <h3 style="font-size:20px;">LIKES: </h3>
 	    <div>{{rating}}</div>
-	    <form method="POST"  action="/rate">
+	    <form method="POST" action="/rate">
             	<button id="like" type="submit">Like This Post</button>
 	    </form>
 	    {% for c in comments %}

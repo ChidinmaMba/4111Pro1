@@ -59,12 +59,13 @@ engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'
 
 #USER table
 engine.execute("""CREATE TABLE Users(
- uid serial PRIMARY KEY,
+ uid int PRIMARY KEY,
  name text,
- email text,
- password text
+ email text UNIQUE,
+ password text UNIQUE
 );""");
 
+engine.execute("""INSERT INTO Users(uid, name, email, password) VALUES (0,'John', 'john@gmail.com', 'johnny');""")
 #MOVIES table
 engine.execute("""CREATE TABLE Movies(
  mid int PRIMARY KEY,
@@ -119,9 +120,8 @@ engine.execute("""CREATE TABLE AddMovie_Likelist(
  id serial,
  title text,
  year int,
- uid int,
  PRIMARY KEY(id, uid),
- FOREIGN KEY(uid) REFERENCES Users
+ uid int REFERENCES Users(uid)
  ON DELETE CASCADE
 );""");
 
@@ -129,9 +129,8 @@ engine.execute("""CREATE TABLE AddMovie_Hatelist(
  id serial,
  title text,
  year int,
- uid int,
  PRIMARY KEY(id, uid),
- FOREIGN KEY(uid) REFERENCES Users
+ uid int REFERENCES Users(uid)
  ON DELETE CASCADE
 );""");
 
@@ -248,23 +247,20 @@ def another():
   return render_template("anotherfile.html")
 
 #signup
-@app.route('/signup', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def signup():
-    name=request.form['name']
-    email=request.form['email']
+    e=request.form['email']
+    #email=request.form['email']
     psw=request.form['psw']
     #print(name, email, psw)
     #i= g.conn.execute(text(f'SELECT COUNT(*) FROM Users WHERE password = {psw};'))
     #if dup == 0:
-    g.conn.execute("INSERT INTO Users(uid, name, email, password) VALUES (0,%s,%s,%s);", (name,email,psw))
-    users=g.conn.execute(text('SELECT * FROM Users;'))
-    info = []
-    for _r in users:
-        info.append([_r['name'], _r['email'], _r['password']])
-    print(info)
-    
-    global user_id
-    user_id = g.conn.execute("SELECT uid FROM Users WHERE name=%s;", (name))
+    count = g.conn.execute("SELECT COUNT (*) FROM Users WHERE email=%s AND password=%s;", (e,psw))
+    if count.mappings().all()[0]['count'] == 0:
+        message = "WRONG PASSWORD OR EMAIL. TRY AGAIN"
+        return render_template("/login.html", message=message)
+    name = g.conn.execute("SELECT name FROM Users WHERE email=%s AND password=%s;", (e, psw))
+    name = name.mappings().all()[0]['name']
     return render_template("/home.html",firstname=name)
 
 @app.route('/makepost', methods=['GET'])
@@ -357,6 +353,7 @@ def home():
         info.append("{} {}\n {}".format(_r['genre'],_r['post_title'],_r['description']))
     context4 = dict(posts=info)
 
+
     return render_template("/home.html", **context, **context1, **context2, **context3, **context4, profpic=full_path)
 
 @app.route('/submitmovies', methods=['POST'])
@@ -379,6 +376,9 @@ def hatelistpage():
 def addtoll():
     title=request.form['title']
     year=request.form['year']
+    if year.isdigit() == False or int(year) > 2022:
+        message="NOT A VALID YEAR"
+        return render_template("/likelist.html", message=message)
     g.conn.execute("INSERT INTO AddMovie_Likelist(title, year, uid) VALUES (%s,%s,0);",(title, year))
     return render_template("/likelist.html")
 
@@ -386,6 +386,9 @@ def addtoll():
 def addtohl():
     title=request.form['title']
     year=request.form['year']
+    if year.isdigit() == False or int(year) > 2022:
+        message="NOT A VALID YEAR"
+        return render_template("/likelist.html", message=message)
     g.conn.execute("INSERT INTO AddMovie_Hatelist(title, year, uid) VALUES (%s,%s,0);",(title, year))
     return render_template("/hatelist.html")
 
